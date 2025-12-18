@@ -1,9 +1,10 @@
 ---
 name: Feature Request
 about: Suggest an idea for Zapi
-title: '[Feature]: '
+title: "[Feature]: "
 labels: enhancement
 assignees: ''
+
 ---
 
 ## Is your feature request related to a problem?
