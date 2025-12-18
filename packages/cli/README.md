@@ -46,7 +46,7 @@ npm create zapi@latest
 Create a `zapi.config.ts` file in your project root:
 
 ```typescript
-import { entity, string, text, belongsTo } from "zapi"
+import { entity, string, text, belongsTo } from "@zapi/core"
 
 export const user = entity("user", {
   email: string.unique(),

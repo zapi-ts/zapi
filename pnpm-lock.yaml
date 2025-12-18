@@ -26,15 +26,15 @@ importers:
 
   packages/cli:
     dependencies:
+      '@zapi/core':
+        specifier: workspace:*
+        version: link:../zapi
       '@zapi/generator':
         specifier: workspace:*
         version: link:../generator
       commander:
         specifier: ^14.0.0
         version: 14.0.2
-      zapi:
-        specifier: workspace:*
-        version: link:../zapi
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -67,7 +67,7 @@ importers:
 
   packages/generator:
     dependencies:
-      zapi:
+      '@zapi/core':
         specifier: workspace:*
         version: link:../zapi
     devDependencies:

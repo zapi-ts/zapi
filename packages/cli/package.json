@@ -18,7 +18,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "zapi": "workspace:*",
+    "@zapi/core": "workspace:*",
     "@zapi/generator": "workspace:*",
     "commander": "^14.0.0"
   },

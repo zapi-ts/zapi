@@ -37,7 +37,7 @@ Your API runs at http://localhost:3000/api
 Describe entities once. Zapi wires the rest.
 
 ```ts
-import { entity, string, text, bool, belongsTo } from "zapi"
+import { entity, string, text, bool, belongsTo } from "@zapi/core"
 
 export const user = entity("user", {
   email: string.unique(),
@@ -59,9 +59,9 @@ From this, you get CRUD endpoints, validation, auth rules, Prisma schema, TS typ
 ```ts
 import express from "express"
 import { PrismaClient } from "@prisma/client"
-import { zapi } from "zapi"
-import { prisma } from "zapi/drivers/prisma"
-import { expressAdapter, expressDevAuth } from "zapi/adapters/express"
+import { zapi } from "@zapi/core"
+import { prisma } from "@zapi/core/drivers/prisma"
+import { expressAdapter, expressDevAuth } from "@zapi/core/adapters/express"
 import { user, post } from "./entities"
 
 const db = new PrismaClient()

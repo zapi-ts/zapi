@@ -26,7 +26,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "zapi": "workspace:*"
+    "@zapi/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

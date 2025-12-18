@@ -20,16 +20,16 @@
 ## Installation
 
 ```bash
-npm install zapi
+npm install @zapi/core
 # or
-pnpm add zapi
+pnpm add @zapi/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { entity, string, text, belongsTo } from "zapi"
-import { zapi } from "zapi"
+import { entity, string, text, belongsTo } from "@zapi/core"
+import { zapi } from "@zapi/core"
 
 // 1. Define entities
 const user = entity("user", {
@@ -48,8 +48,8 @@ const post = entity("post", {
 
 // 2. Mount to your framework (Express + Prisma example)
 import express from "express"
-import { expressAdapter, expressDevAuth } from "zapi/adapters/express"
-import { prisma } from "zapi/drivers/prisma"
+import { expressAdapter, expressDevAuth } from "@zapi/core/adapters/express"
+import { prisma } from "@zapi/core/drivers/prisma"
 import { PrismaClient } from "@prisma/client"
 
 const app = express()
@@ -68,7 +68,7 @@ app.listen(3000)
 ## Entity DSL
 
 ```typescript
-import { entity, string, text, int, bool, datetime, belongsTo, hasMany } from "zapi"
+import { entity, string, text, int, bool, datetime, belongsTo, hasMany } from "@zapi/core"
 
 const task = entity("task", {
   // String fields

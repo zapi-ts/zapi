@@ -68,7 +68,7 @@ program
 
 Create a zapi.config.ts file with your entities:
 
-  import { entity, string, text, belongsTo } from "zapi"
+  import { entity, string, text, belongsTo } from "@zapi/core"
 
   export const user = entity("user", {
     email: string.unique(),

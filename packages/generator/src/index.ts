@@ -5,8 +5,8 @@
 
 import { writeFileSync, mkdirSync, existsSync } from "fs"
 import { join, dirname } from "path"
-import type { Entity, FieldDef, FieldType } from "zapi"
-import { pluralize, resolveEntity } from "zapi"
+import type { Entity, FieldDef, FieldType } from "@zapi/core"
+import { pluralize, resolveEntity } from "@zapi/core"
 
 // -----------------------------------------------------------------------------
 // Constants

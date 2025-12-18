@@ -14,7 +14,7 @@ npm install @zapi/generator
 
 ```typescript
 import { generate } from "@zapi/generator"
-import { entity, string, text, belongsTo } from "zapi"
+import { entity, string, text, belongsTo } from "@zapi/core"
 
 // Define entities
 const user = entity("user", {
