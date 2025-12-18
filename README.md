@@ -1,7 +1,7 @@
 # Zapi
 
-[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapidev/zapi)
-[![CI](https://github.com/zapidev/zapi/actions/workflows/ci.yml/badge.svg)](https://github.com/zapidev/zapi/actions/workflows/ci.yml)
+[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-ts/zapi)
+[![CI](https://github.com/zapi-ts/zapi/actions/workflows/ci.yml/badge.svg)](https://github.com/zapi-ts/zapi/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > ⚠️ **Beta Software**: Zapi is under active development. APIs may change before v1.0.
