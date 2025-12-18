@@ -1,9 +1,10 @@
 ---
 name: Bug Report
 about: Report a bug to help us improve Zapi
-title: '[Bug]: '
+title: "[Bug]: "
 labels: bug
 assignees: ''
+
 ---
 
 ## Describe the Bug
