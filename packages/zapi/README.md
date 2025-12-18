@@ -2,7 +2,7 @@
 
 > Zero to API in seconds - Entity-first, type-safe API framework
 
-[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-ts/zapi)
+[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-x/zapi)
 [![npm version](https://badge.fury.io/js/zapi.svg)](https://www.npmjs.com/package/zapi)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -20,16 +20,16 @@
 ## Installation
 
 ```bash
-npm install @zapi-ts/core
+npm install @zapi-x/core
 # or
-pnpm add @zapi-ts/core
+pnpm add @zapi-x/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { entity, string, text, belongsTo } from "@zapi-ts/core"
-import { zapi } from "@zapi-ts/core"
+import { entity, string, text, belongsTo } from "@zapi-x/core"
+import { zapi } from "@zapi-x/core"
 
 // 1. Define entities
 const user = entity("user", {
@@ -48,8 +48,8 @@ const post = entity("post", {
 
 // 2. Mount to your framework (Express + Prisma example)
 import express from "express"
-import { expressAdapter, expressDevAuth } from "@zapi-ts/core/adapters/express"
-import { prisma } from "@zapi-ts/core/drivers/prisma"
+import { expressAdapter, expressDevAuth } from "@zapi-x/core/adapters/express"
+import { prisma } from "@zapi-x/core/drivers/prisma"
 import { PrismaClient } from "@prisma/client"
 
 const app = express()
@@ -68,7 +68,7 @@ app.listen(3000)
 ## Entity DSL
 
 ```typescript
-import { entity, string, text, int, bool, datetime, belongsTo, hasMany } from "@zapi-ts/core"
+import { entity, string, text, int, bool, datetime, belongsTo, hasMany } from "@zapi-x/core"
 
 const task = entity("task", {
   // String fields
@@ -128,7 +128,7 @@ import { timestamps } from "zapi/plugins/timestamps"
 Use the generator to create Prisma schema, TypeScript types, and API client:
 
 ```typescript
-import { generate } from "@zapi-ts/generator"
+import { generate } from "@zapi-x/generator"
 import { entities } from "./entities"
 
 generate(entities, {

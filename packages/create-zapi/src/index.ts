@@ -2,7 +2,7 @@
 // =============================================================================
 // CREATE-ZAPI
 // Scaffold a new zapi project
-// Usage: npm create zapi-ts@latest
+// Usage: npm create zapi-x@latest
 // =============================================================================
 
 import prompts from "prompts"
@@ -31,8 +31,8 @@ const templates = {
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",
-    "@zapi-ts/generator": "^0.1.0-beta.2",
-    "@zapi-ts/core": "^0.1.0-beta.2",
+    "@zapi-x/generator": "^0.1.0-beta.2",
+    "@zapi-x/core": "^0.1.0-beta.2",
     "express": "^4.18.2"
   },
   "devDependencies": {
@@ -106,7 +106,7 @@ generated
   // src/entities/
   // ==========================================================================
 
-  "src/entities/user.ts": () => `import { entity, string, text, email } from "@zapi-ts/core"
+  "src/entities/user.ts": () => `import { entity, string, text, email } from "@zapi-x/core"
 
 export const user = entity("user", {
   email: email.unique(),
@@ -122,7 +122,7 @@ export const user = entity("user", {
 })
 `,
 
-  "src/entities/post.ts": () => `import { entity, string, text, bool, belongsTo } from "@zapi-ts/core"
+  "src/entities/post.ts": () => `import { entity, string, text, bool, belongsTo } from "@zapi-x/core"
 import { user } from "./user.js"
 
 export const post = entity("post", {
@@ -135,7 +135,7 @@ export const post = entity("post", {
 }).ownedBy("author")
 `,
 
-  "src/entities/comment.ts": () => `import { entity, text, belongsTo } from "@zapi-ts/core"
+  "src/entities/comment.ts": () => `import { entity, text, belongsTo } from "@zapi-x/core"
 import { user } from "./user.js"
 import { post } from "./post.js"
 
@@ -163,7 +163,7 @@ export { comment } from "./comment.js"
   "src/hooks/.gitkeep": () => `# Custom lifecycle hooks go here
 # Example: post.hooks.ts
 
-# import type { Plugin } from "@zapi-ts/core"
+# import type { Plugin } from "@zapi-x/core"
 #
 # export const postHooks: Plugin = {
 #   name: "post-hooks",
@@ -186,7 +186,7 @@ export { comment } from "./comment.js"
   "src/plugins/.gitkeep": () => `# Custom plugins go here
 # Example: audit-log.ts
 
-# import type { Plugin } from "@zapi-ts/core"
+# import type { Plugin } from "@zapi-x/core"
 #
 # export const auditLog: Plugin = {
 #   name: "audit-log",
@@ -211,7 +211,7 @@ export { comment } from "./comment.js"
   "src/routes/.gitkeep": () => `# Custom routes go here (non-CRUD endpoints)
 # Example: auth.ts
 
-# import type { Route } from "@zapi-ts/core"
+# import type { Route } from "@zapi-x/core"
 #
 # export const authRoutes: Route[] = [
 #   {
@@ -239,7 +239,7 @@ export { comment } from "./comment.js"
   "src/middleware/.gitkeep": () => `# Custom middleware go here
 # Example: rate-limit.ts
 
-# import type { Middleware } from "@zapi-ts/core"
+# import type { Middleware } from "@zapi-x/core"
 #
 # export const rateLimitMiddleware: Middleware = {
 #   name: "rate-limit",
@@ -304,7 +304,7 @@ export default config
 // Run: npm run generate
 // =============================================================================
 
-import { generate } from "@zapi-ts/generator"
+import { generate } from "@zapi-x/generator"
 import { config } from "./config.js"
 
 generate(config.entities, {
@@ -323,9 +323,9 @@ generate(config.entities, {
 
 import express from "express"
 import { PrismaClient } from "@prisma/client"
-import { zapi } from "@zapi-ts/core"
-import { prisma } from "@zapi-ts/core/drivers/prisma"
-import { expressAdapter, expressDevAuth } from "@zapi-ts/core/adapters/express"
+import { zapi } from "@zapi-x/core"
+import { prisma } from "@zapi-x/core/drivers/prisma"
+import { expressAdapter, expressDevAuth } from "@zapi-x/core/adapters/express"
 import { config } from "./config.js"
 
 // -----------------------------------------------------------------------------
@@ -431,7 +431,7 @@ process.on("SIGINT", async () => {
 
   "README.md": (name: string) => `# ${name}
 
-A REST API powered by [@zapi-ts/core](https://github.com/zapidev/zapi).
+A REST API powered by [@zapi-x/core](https://github.com/zapidev/zapi).
 
 ## Quick Start
 
@@ -486,7 +486,7 @@ ${name}/
 1. Create \`src/entities/product.ts\`:
 
 \`\`\`typescript
-import { entity, string, int, float, belongsTo } from "@zapi-ts/core"
+import { entity, string, int, float, belongsTo } from "@zapi-x/core"
 import { user } from "./user.js"
 
 export const product = entity("product", {

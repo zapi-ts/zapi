@@ -1,19 +1,19 @@
-# create-zapi-ts
+# create-zapi-x
 
-[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-ts/zapi)
+[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-x/zapi)
 
-Scaffold a new [zapi](https://github.com/zapi-ts/zapi) project - Zero to API in seconds.
+Scaffold a new [zapi](https://github.com/zapi-x/zapi) project - Zero to API in seconds.
 
 ## Usage
 
 ```bash
-npm create zapi-ts@latest
+npm create zapi-x@latest
 # or
-npx create-zapi-ts
+npx create-zapi-x
 # or
-pnpm create zapi-ts
+pnpm create zapi-x
 # or
-bun create zapi-ts
+bun create zapi-x
 ```
 
 ## What It Creates

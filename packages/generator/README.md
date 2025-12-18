@@ -1,20 +1,20 @@
-# @zapi-ts/generator
+# @zapi-x/generator
 
-[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-ts/zapi)
+[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-x/zapi)
 
-Code generator for [zapi](https://github.com/zapi-ts/zapi) - generates Prisma schema, TypeScript types, and API client from entity definitions.
+Code generator for [zapi](https://github.com/zapi-x/zapi) - generates Prisma schema, TypeScript types, and API client from entity definitions.
 
 ## Installation
 
 ```bash
-npm install @zapi-ts/generator
+npm install @zapi-x/generator
 ```
 
 ## Usage
 
 ```typescript
-import { generate } from "@zapi-ts/generator"
-import { entity, string, text, belongsTo } from "@zapi-ts/core"
+import { generate } from "@zapi-x/generator"
+import { entity, string, text, belongsTo } from "@zapi-x/core"
 
 // Define entities
 const user = entity("user", {
@@ -56,7 +56,7 @@ Options:
 Generate only the Prisma schema.
 
 ```typescript
-import { generatePrismaSchema } from "@zapi-ts/generator"
+import { generatePrismaSchema } from "@zapi-x/generator"
 
 const schema = generatePrismaSchema([user, post], {
   provider: "postgresql",
@@ -70,7 +70,7 @@ console.log(schema) // Prisma schema string
 Generate only the TypeScript type definitions.
 
 ```typescript
-import { generateTypes } from "@zapi-ts/generator"
+import { generateTypes } from "@zapi-x/generator"
 
 const types = generateTypes([user, post])
 
@@ -82,7 +82,7 @@ console.log(types) // TypeScript interfaces
 Generate only the API client.
 
 ```typescript
-import { generateClient } from "@zapi-ts/generator"
+import { generateClient } from "@zapi-x/generator"
 
 const client = generateClient([user, post])
 
@@ -146,10 +146,10 @@ model User {
 
 ## CLI Usage
 
-For command-line usage, install `@zapi-ts/cli`:
+For command-line usage, install `@zapi-x/cli`:
 
 ```bash
-npm install -g @zapi-ts/cli
+npm install -g @zapi-x/cli
 zapi generate
 ```
 

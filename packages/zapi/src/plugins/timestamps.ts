@@ -14,7 +14,7 @@ import type { Plugin } from "../types.js"
  *
  * @example
  * ```typescript
- * import { timestamps } from "@zapi-ts/plugin-timestamps"
+ * import { timestamps } from "@zapi-x/plugin-timestamps"
  *
  * const api = zapi({
  *   entities: [...],

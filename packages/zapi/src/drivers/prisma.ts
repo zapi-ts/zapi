@@ -237,7 +237,7 @@ function createPrismaDriverMethods(
  * @example
  * ```typescript
  * import { PrismaClient } from "@prisma/client"
- * import { prisma } from "@zapi-ts/driver-prisma"
+ * import { prisma } from "@zapi-x/driver-prisma"
  *
  * const client = new PrismaClient()
  * const driver = prisma(client)

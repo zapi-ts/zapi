@@ -26,10 +26,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@zapi-ts/core':
+      '@zapi-x/core':
         specifier: workspace:*
         version: link:../zapi
-      '@zapi-ts/generator':
+      '@zapi-x/generator':
         specifier: workspace:*
         version: link:../generator
       commander:
@@ -67,7 +67,7 @@ importers:
 
   packages/generator:
     dependencies:
-      '@zapi-ts/core':
+      '@zapi-x/core':
         specifier: workspace:*
         version: link:../zapi
     devDependencies:

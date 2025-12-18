@@ -27,7 +27,7 @@ A clear and concise description of what you expected to happen.
 
 ```typescript
 // Minimal code to reproduce the issue
-import { entity, string } from "@zapi-ts/core"
+import { entity, string } from "@zapi-x/core"
 
 const user = entity("user", {
   name: string

@@ -127,8 +127,8 @@ function getCorsHeaders(cors: string | string[] | boolean, origin?: string): Rec
  * @example
  * ```typescript
  * import express from "express"
- * import { zapi } from "@zapi-ts/core"
- * import { expressAdapter } from "@zapi-ts/adapter-express"
+ * import { zapi } from "@zapi-x/core"
+ * import { expressAdapter } from "@zapi-x/adapter-express"
  *
  * const app = express()
  * app.use(express.json())

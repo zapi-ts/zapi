@@ -1,15 +1,15 @@
-# @zapi-ts/cli
+# @zapi-x/cli
 
-[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-ts/zapi)
+[![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/zapi-x/zapi)
 
-Command-line interface for [zapi](https://github.com/zapi-ts/zapi) - Zero to API in seconds.
+Command-line interface for [zapi](https://github.com/zapi-x/zapi) - Zero to API in seconds.
 
 ## Installation
 
 ```bash
-npm install -g @zapi-ts/cli
+npm install -g @zapi-x/cli
 # or use with npx
-npx @zapi-ts/cli generate
+npx @zapi-x/cli generate
 ```
 
 ## Usage
@@ -38,7 +38,7 @@ zapi init
 For full project scaffolding, use:
 
 ```bash
-npm create zapi-ts@latest
+npm create zapi-x@latest
 ```
 
 ## Configuration
@@ -46,7 +46,7 @@ npm create zapi-ts@latest
 Create a `zapi.config.ts` file in your project root:
 
 ```typescript
-import { entity, string, text, belongsTo } from "@zapi-ts/core"
+import { entity, string, text, belongsTo } from "@zapi-x/core"
 
 export const user = entity("user", {
   email: string.unique(),
