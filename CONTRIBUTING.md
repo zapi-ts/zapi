@@ -1,4 +1,4 @@
-# Contributing to Zapi
+# Contributing to Nevr
 
 We welcome contributions!
 
@@ -10,7 +10,7 @@ We welcome contributions!
 
 ## Project Structure
 
-- `packages/zapi`: The core Zapi logic.
+- `packages/zapi`: The core Nevr logic.
 - `packages/cli`: The command-line interface.
 - `packages/zapi/drivers`: Prisma integration.
 - `packages/zapi/adapters`: HTTP adapters (Express, Hono, etc.).
