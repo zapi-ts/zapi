@@ -37,12 +37,12 @@
 # Traditional Approach (Express + Prisma + Zod)
  To get a single Post resource with validation and ownership-checks, you typically write:
 
-// ❌ ~50-100 lines across 3+ files
-// 1. Define Prisma Schema (schema.prisma)
-// 2. Define Zod Validation (post.schema.ts)
-// 3. Define Types (post.types.ts)
-// 4. Write Controller logic (post.controller.ts)
-// 5. Setup Routes (post.routes.ts)
+- ❌ ~50-100 lines across 3+ files
+- 1. Define Prisma Schema (schema.prisma)
+- 2. Define Zod Validation (post.schema.ts)
+- 3. Define Types (post.types.ts)
+- 4. Write Controller logic (post.controller.ts)
+- 5. Setup Routes (post.routes.ts)
 ```ts 
 router.post("/posts", async (req, res) => {
   const schema = z.object({ title: z.string().min(1), body: z.string() });
@@ -68,12 +68,13 @@ export const post = entity("post", {
   author: belongsTo(() => user),
 }).ownedBy("author") 
 ```
-// DONE. You now have:
-// - POST /api/posts (Validated & Auth protected)
-// - GET /api/posts (Filtered, Sorted, Paginated)
-// - PUT /api/posts/:id (Ownership enforced)
-// - DELETE /api/posts/:id (Ownership enforced)
-// - Fully typed Frontend Client
+DONE. You now have:
+
+- POST /api/posts (Validated & Auth protected)
+- GET /api/posts (Filtered, Sorted, Paginated)
+- PUT /api/posts/:id (Ownership enforced)
+- DELETE /api/posts/:id (Ownership enforced)
+- Fully typed Frontend Client
 
 ## Quick Start
 
@@ -166,14 +167,14 @@ npm run docs:dev
 
 PRs welcome! Please see CONTRIBUTING.md and open an issue with your proposal.
 
-| `string` | Short text |
-| `text` | Long text |
-| `int` | Integer |
-| `float` | Decimal |
-| `bool` | Boolean |
-| `datetime` | Date & time |
-| `json` | JSON data |
-| `email` | Email with validation |
+- | `string` | Short text |
+- | `text` | Long text |
+- | `int` | Integer |
+- | `float` | Decimal |
+- | `bool` | Boolean |
+- | `datetime` | Date & time |
+- | `json` | JSON data |
+- | `email` | Email with validation |
 
 ### Modifiers
 
