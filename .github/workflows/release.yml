@@ -38,10 +38,33 @@ jobs:
 
       - name: Publish to npm
         run: |
-          cd packages/zapi && pnpm publish --access public --no-git-checks
-          cd ../generator && pnpm publish --access public --no-git-checks
-          cd ../cli && pnpm publish --access public --no-git-checks
-          cd ../create-nevr && pnpm publish --access public --no-git-checks
+          echo "Publishing packages to npm..."
+          
+          # Function to check if version exists and publish
+          publish_package() {
+            local package_dir=$1
+            local package_name=$(node -p "require('./$package_dir/package.json').name")
+            local package_version=$(node -p "require('./$package_dir/package.json').version")
+            
+            echo "Checking $package_name@$package_version..."
+            
+            # Check if version already exists on npm
+            if npm view "$package_name@$package_version" version > /dev/null 2>&1; then
+              echo "⚠️  $package_name@$package_version already exists on npm. Skipping..."
+            else
+              echo "📦 Publishing $package_name@$package_version..."
+              cd "$package_dir" && pnpm publish --access public --no-git-checks
+              cd ..
+            fi
+          }
+          
+          # Publish all packages
+          publish_package "packages/zapi"
+          publish_package "packages/generator"
+          publish_package "packages/cli"
+          publish_package "packages/create-nevr"
+          
+          echo "✅ Publishing complete!"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
