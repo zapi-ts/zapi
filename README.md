@@ -118,6 +118,19 @@ Every plugin is **open and extendable**.
 
 ---
 
+## ⚖️ Traditional Backend vs. Nevr
+
+| Feature | Traditional (Express / NestJS) | **Nevr** |
+| :--- | :--- | :--- |
+| **Boilerplate** | Write Routes, Controllers, and Services for every resource. | **Zero-API.** Define the Entity; the plumbing is handled. |
+| **Type Safety** | Manually sync interfaces or use decorators. | **End-to-End.** Client is generated from the Entity; build fails on drift. |
+| **Validation** | Duplicate logic in DB schema and Runtime (Zod/Joi). | **Single Source of Truth.** Constraints are baked into the Entity. |
+| **Authorization** | Manual middleware chains and ownership checks. | **Declarative.** Use `.ownedBy()` or `.rules()` in the model. |
+| **Documentation** | Maintain Swagger/OpenAPI decorators manually. | **Mathematically Synced.** OpenAPI spec is the schema itself. |
+| **Data Access** | Manual CRUD logic and Repository patterns. | **Automatic CRUD.** Filtering, sorting, and pagination out-of-the-box. |
+
+---
+
 ## Concepts At A Glance
 
 - Entities: `entity(name, { fields })` → `.ownedBy(field)` `.rules({...})` `.noTimestamps()`
@@ -172,20 +185,6 @@ Adapter helpers (Express)
 <!-- - `expressDevAuth(req)` → reads `X-User-Id`, `X-User-Role` -->
 - `expressJwtAuth(verify)` → parse Bearer token and verify
 
----
-
-## ⚖️ Traditional Backend vs. Nevr
-
-| Feature | Traditional (Express / NestJS) | **Nevr** |
-| :--- | :--- | :--- |
-| **Boilerplate** | Write Routes, Controllers, and Services for every resource. | **Zero-API.** Define the Entity; the plumbing is handled. |
-| **Type Safety** | Manually sync interfaces or use decorators. | **End-to-End.** Client is generated from the Entity; build fails on drift. |
-| **Validation** | Duplicate logic in DB schema and Runtime (Zod/Joi). | **Single Source of Truth.** Constraints are baked into the Entity. |
-| **Authorization** | Manual middleware chains and ownership checks. | **Declarative.** Use `.ownedBy()` or `.rules()` in the model. |
-| **Documentation** | Maintain Swagger/OpenAPI decorators manually. | **Mathematically Synced.** OpenAPI spec is the schema itself. |
-| **Data Access** | Manual CRUD logic and Repository patterns. | **Automatic CRUD.** Filtering, sorting, and pagination out-of-the-box. |
-
----
 
 ## Documentation
 
@@ -366,6 +365,7 @@ const api = zapi({
 - **Testing Utilities**: mocks, fixtures, e2e helpers...
 - **Performance Optimizations**: caching, batching...
 - ...more!
+
 ## License
 
 MIT
