@@ -33,6 +33,7 @@ const templates = {
     "@prisma/client": "^5.7.0",
     "@nevr/generator": "^0.1.0",
     "nevr": "^0.1.0",
+    "better-auth": "^1.0.0",
     "express": "^4.18.2"
   },
   "devDependencies": {
@@ -66,16 +67,47 @@ const templates = {
 }`,
 
   ".env": (db: string) => {
+    const authSecret = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
     if (db === "postgresql") {
       return `DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
-PORT=3000`
+PORT=3000
+
+# Auth Plugin (Better Auth)
+BETTER_AUTH_SECRET="${authSecret}"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# OAuth Providers (optional)
+# GOOGLE_CLIENT_ID=""
+# GOOGLE_CLIENT_SECRET=""
+# GITHUB_CLIENT_ID=""
+# GITHUB_CLIENT_SECRET=""`
     }
     if (db === "mysql") {
       return `DATABASE_URL="mysql://user:password@localhost:3306/mydb"
-PORT=3000`
+PORT=3000
+
+# Auth Plugin (Better Auth)
+BETTER_AUTH_SECRET="${authSecret}"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# OAuth Providers (optional)
+# GOOGLE_CLIENT_ID=""
+# GOOGLE_CLIENT_SECRET=""
+# GITHUB_CLIENT_ID=""
+# GITHUB_CLIENT_SECRET=""`
     }
     return `DATABASE_URL="file:./dev.db"
-PORT=3000`
+PORT=3000
+
+# Auth Plugin (Better Auth)
+BETTER_AUTH_SECRET="${authSecret}"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# OAuth Providers (optional)
+# GOOGLE_CLIENT_ID=""
+# GOOGLE_CLIENT_SECRET=""
+# GITHUB_CLIENT_ID=""
+# GITHUB_CLIENT_SECRET=""`
   },
 
   ".gitignore": () => `# Dependencies
@@ -267,6 +299,7 @@ export { comment } from "./comment.js"
 // =============================================================================
 
 import { user, post, comment } from "./entities/index.js"
+import { auth } from "nevr/plugins/auth"
 
 // Import custom plugins (uncomment when created)
 // import { auditLog } from "./plugins/audit-log.js"
@@ -281,8 +314,35 @@ export const config = {
   // Entities
   entities: [user, post, comment],
 
-  // Plugins (uncomment to enable)
+  // Plugins
   plugins: [
+    // Auth plugin - powered by Better Auth
+    // Provides: signup, signin, signout, session management, OAuth, etc.
+    // Routes: /api/auth/sign-up, /api/auth/sign-in, /api/auth/sign-out, etc.
+    auth({
+      // Required: Set BETTER_AUTH_SECRET in .env
+      // secret: process.env.BETTER_AUTH_SECRET,
+      
+      // Auth mode: "session" (cookies) | "bearer" (API tokens) | "jwt" (JWT tokens)
+      mode: "session",
+      
+      // Enable email/password auth
+      emailAndPassword: true,
+      
+      // OAuth providers (uncomment and configure)
+      // providers: {
+      //   google: {
+      //     clientId: process.env.GOOGLE_CLIENT_ID!,
+      //     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      //   },
+      //   github: {
+      //     clientId: process.env.GITHUB_CLIENT_ID!,
+      //     clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      //   },
+      // },
+    }),
+    
+    // Custom plugins
     // auditLog,
   ],
 
@@ -325,7 +385,7 @@ import express from "express"
 import { PrismaClient } from "@prisma/client"
 import { zapi } from "nevr"
 import { prisma } from "nevr/drivers/prisma"
-import { expressAdapter, expressDevAuth } from "nevr/adapters/express"
+import { expressAdapter } from "nevr/adapters/express"
 import { config } from "./config.js"
 
 // -----------------------------------------------------------------------------
@@ -353,10 +413,10 @@ app.get("/health", (req, res) => {
 })
 
 // Mount zapi API
+// The auth plugin automatically handles user extraction from sessions
 app.use("/api", expressAdapter(api, {
-  // Development: header-based auth (X-User-Id, X-User-Role)
-  // Production: replace with your auth (Better Auth, JWT, etc.)
-  getUser: expressDevAuth,
+  cors: true,
+  debugLogs: process.env.NODE_ENV !== "production",
 }))
 
 // -----------------------------------------------------------------------------
@@ -374,6 +434,15 @@ app.listen(port, () => {
 ║   Local:      http://localhost:\${port}                           ║
 ║   API:        http://localhost:\${port}/api                       ║
 ║   Health:     http://localhost:\${port}/health                    ║
+║                                                                ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║   Auth Endpoints (from auth plugin):                           ║
+║   ────────────────────────────────────────────────────────     ║
+║   POST    /api/auth/sign-up       Create account               ║
+║   POST    /api/auth/sign-in       Sign in                      ║
+║   POST    /api/auth/sign-out      Sign out                     ║
+║   GET     /api/auth/session       Get current session          ║
 ║                                                                ║
 ╠════════════════════════════════════════════════════════════════╣
 ║                                                                ║
@@ -406,13 +475,6 @@ app.listen(port, () => {
 ║   ?sort=-field              Sort descending                    ║
 ║   ?limit=20&offset=0        Pagination                         ║
 ║   ?include=author           Include relations                  ║
-║                                                                ║
-╠════════════════════════════════════════════════════════════════╣
-║                                                                ║
-║   Development Auth (headers):                                  ║
-║   ────────────────────────────────────────────────────────     ║
-║   X-User-Id: <user-id>      Required for authenticated routes  ║
-║   X-User-Role: admin        Optional, for admin operations     ║
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 \`)
