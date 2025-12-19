@@ -1,12 +1,24 @@
-# Nevr
+# ⚡ Nevr
 
 [![Beta](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/nevr-ts/nevr)
 [![CI](https://github.com/nevr-ts/nevr/actions/workflows/ci.yml/badge.svg)](https://github.com/nevr-ts/nevr/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Nevr write boilerplate again.** Nevr is a Zero-API, entity-first framework that turns your domain models into a fully functional, type-safe backend instantly.
+
 > ⚠️ **Beta Software**: Nevr is under active development. APIs may change before v1.0.
 
-**Nevr write boilerplate again.** Framework-agnostic, database-agnostic, fully type-safe.
+---
+
+## 🚫 Solving the 5 Backend Nightmares
+
+1. **The Boilerplate Trap**: Stop writing repetitive Controllers, Services, and Routes.
+2. **The Type-Safety Gap**: Automatic client generation ensures your frontend build fails if the entity changes.
+3. **Authorization Nightmares**: Declarative permissions (e.g., `.ownedBy('author')`) baked into the model.
+4. **Inconsistent Validation**: Single source of truth for both Database constraints and Runtime validation.
+5. **Documentation Drift**: Your schema *is* the documentation. OpenAPI specs are always in sync.
+
+---
 
 Nevr lets you describe your domain once with a tiny, fluent DSL and get:
 - REST CRUD endpoints with ownership-aware authorization
@@ -16,38 +28,26 @@ Nevr lets you describe your domain once with a tiny, fluent DSL and get:
 - Optional plugins (auth, timestamps) without lock‑in
 - Generated Prisma schema, shared TS types, and a typed API client
 
-Docs live in Nevr doc/ (VitePress). Quick start below; full guides cover every keyword.
+Docs live in  docs/ (VitePress). Quick start below; full guides cover every keyword.
+
+
 
 ## Quick Start
 
 ```bash
-# Scaffold a new project
 npm create nevr@latest my-api
-
 cd my-api
-npm run generate   # generates Prisma schema, types, client
-npm run db:push    # creates database tables
-npm run dev        # starts the server
+npm run generate && npm run dev
 ```
 
-Your API runs at http://localhost:3000/api
-
-## Core Idea
-
-Describe entities once. Nevr wires the rest.
+## Core Idea: Define once, get everything.
 
 ```ts
-import { entity, string, text, bool, belongsTo } from "nevr"
-
-export const user = entity("user", {
-  email: string.unique(),
-  name: string.min(1).max(100),
-})
+import { entity, string, text, belongsTo } from "nevr"
 
 export const post = entity("post", {
   title: string.min(1).max(200),
   body: text,
-  published: bool.default(false),
   author: belongsTo(() => user),
 }).ownedBy("author")
 ```
@@ -59,23 +59,22 @@ From this, you get CRUD endpoints, validation, auth rules, Prisma schema, TS typ
 ```ts
 import express from "express"
 import { PrismaClient } from "@prisma/client"
-import { zapi } from "nevr"
+import { zapi } from "nevr" 
 import { prisma } from "nevr/drivers/prisma"
-import { expressAdapter, expressDevAuth } from "nevr/adapters/express"
+import { expressAdapter } from "nevr/adapters/express"
 import { user, post } from "./entities"
 
 const db = new PrismaClient()
 
-const api = zapi({
+const api = zapi({ // Consistent naming
   entities: [user, post],
   driver: prisma(db),
-  plugins: [],
-  cors: { origin: true, credentials: true },
+  cors: { origin: true },
 })
 
 const app = express()
 app.use(express.json())
-app.use("/api", expressAdapter(api, { getUser: expressDevAuth, cors: true }))
+app.use("/api", expressAdapter(api))
 app.listen(3000)
 ```
 
@@ -130,16 +129,16 @@ Rules (built-ins)
 
 Adapter helpers (Express)
 - `expressAdapter(api, { getUser, cors, debugLogs })`
-- `expressDevAuth(req)` → reads `X-User-Id`, `X-User-Role`
+<!-- - `expressDevAuth(req)` → reads `X-User-Id`, `X-User-Role` -->
 - `expressJwtAuth(verify)` → parse Bearer token and verify
 
 ## Documentation
 
-- Developer docs live in Nevr doc/ (VitePress). Start with Nevr doc/docs/guide/getting-started.md
+- Developer docs live in  docs/ (VitePress). Start with docs/guide/getting-started.md
 - To run docs locally:
 
 ```bash
-cd "Zapi doc"
+cd "docs"
 npm install
 npm run docs:dev
 ```
@@ -223,7 +222,7 @@ const api = zapi({
 
 ### Error Handling
 
-Zapi automatically handles errors and returns standardized JSON responses:
+Nevr automatically handles errors and returns standardized JSON responses:
 
 ```json
 {
