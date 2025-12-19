@@ -244,4 +244,8 @@ export function jwtAuth(
   }
 }
 
+// Aliases for convenience
+export { devAuth as expressDevAuth }
+export { jwtAuth as expressJwtAuth }
+
 export default expressAdapter

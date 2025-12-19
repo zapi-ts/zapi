@@ -331,4 +331,8 @@ export function cookieAuth(
   }
 }
 
+// Aliases for convenience
+export { devAuth as honoDevAuth }
+export { jwtAuth as honoJwtAuth }
+
 export default honoAdapter
