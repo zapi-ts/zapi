@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve Zapi
+about: Report a bug to help us improve Nevr
 title: "[Bug]: "
 labels: bug
 assignees: ''
@@ -27,7 +27,7 @@ A clear and concise description of what you expected to happen.
 
 ```typescript
 // Minimal code to reproduce the issue
-import { entity, string } from "@zapi-x/core"
+import { entity, string } from "nevr"
 
 const user = entity("user", {
   name: string
@@ -44,7 +44,7 @@ Paste any error messages here
 
 - **OS**: [e.g., Windows 11, macOS 14, Ubuntu 22.04]
 - **Node.js version**: [e.g., 20.10.0]
-- **Zapi version**: [e.g., 0.1.0-beta.1]
+- **Nevr version**: [e.g., 0.1.0-beta.1]
 - **Adapter**: [e.g., Express, Hono]
 - **Database**: [e.g., SQLite, PostgreSQL]
 
