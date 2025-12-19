@@ -8,29 +8,40 @@
 
 > ⚠️ **Beta Software**: Nevr is under active development. APIs may change before v1.0.
 
+## Quick Start
+
+```bash
+npm create nevr@latest my-api
+cd my-api
+npm run generate && npm run dev
+```
+
+## Core Idea: Define once, get everything.
+
+```ts
+import { entity, string, text, belongsTo } from "nevr"
+
+export const post = entity("post", {
+  title: string.min(1).max(200),
+  body: text,
+  author: belongsTo(() => user),
+}).ownedBy("author")
+```
+
+From this, you get CRUD endpoints, validation, auth rules, Prisma schema, TS types, and a client.
+
 ---
 
-## 🚫 Solving the 5 Backend Nightmares
+## 🚫 Solving the 6 Backend Nightmares
 
 1. **The Boilerplate Trap**: Stop writing repetitive Controllers, Services, and Routes.
 2. **The Type-Safety Gap**: Automatic client generation ensures your frontend build fails if the entity changes.
 3. **Authorization Nightmares**: Declarative permissions (e.g., `.ownedBy('author')`) baked into the model.
 4. **Inconsistent Validation**: Single source of truth for both Database constraints and Runtime validation.
 5. **Documentation Drift**: Your schema *is* the documentation. OpenAPI specs are always in sync.
+6. **The Expertise Bottleneck**: Junior and mid-level developers often spend days researching best practices for complex logic. Nevr encapsulates Senior-level architectural patterns into plug-and-play modules. The knowledge is in the system, not just in the minds of a few.
 
 ---
-
-## ⚖️ Traditional Backend vs. Nevr
-
-| Feature | Traditional (Express / NestJS) | **Nevr** |
-| :--- | :--- | :--- |
-| **Boilerplate** | Write Routes, Controllers, and Services for every resource. | **Zero-API.** Define the Entity; the plumbing is handled. |
-| **Type Safety** | Manually sync interfaces or use decorators. | **End-to-End.** Client is generated from the Entity; build fails on drift. |
-| **Validation** | Duplicate logic in DB schema and Runtime (Zod/Joi). | **Single Source of Truth.** Constraints are baked into the Entity. |
-| **Authorization** | Manual middleware chains and ownership checks. | **Declarative.** Use `.ownedBy()` or `.rules()` in the model. |
-| **Documentation** | Maintain Swagger/OpenAPI decorators manually. | **Mathematically Synced.** OpenAPI spec is the schema itself. |
-| **Data Access** | Manual CRUD logic and Repository patterns. | **Automatic CRUD.** Filtering, sorting, and pagination out-of-the-box. |
-
 
 ## 🥊 The Code Duel: Traditional vs. Nevr
 
@@ -76,27 +87,36 @@ DONE. You now have:
 - DELETE /api/posts/:id (Ownership enforced)
 - Fully typed Frontend Client
 
-## Quick Start
+---
 
-```bash
-npm create nevr@latest my-api
-cd my-api
-npm run generate && npm run dev
-```
+## 🧩 The "Assemble-not-Build" Philosophy
 
-## Core Idea: Define once, get everything.
+Nevr isn't just a framework; it's a modular ecosystem built on the **Nevr Trinity**:
 
-```ts
-import { entity, string, text, belongsTo } from "nevr"
+1. **Adapters**: Where your API lives (Express, Hono, Next.js).
+2. **Drivers**: How your data is stored (Prisma, Drizzle, Kysely).
+3. **Plugins**: Everything else.
 
-export const post = entity("post", {
-  title: string.min(1).max(200),
-  body: text,
-  author: belongsTo(() => user),
-}).ownedBy("author")
-```
+### 🚀 Everything is a Plugin
+In Nevr, high-level features are self-contained plugins. You don't need to be a senior architect to implement complex logic—you just plug it in.
 
-From this, you get CRUD endpoints, validation, auth rules, Prisma schema, TS types, and a client.
+| Plugin | What it adds to your project |
+| :--- | :--- |
+| **Auth** | Login routes, JWT/Session handling, and `User` schemas....and more. |
+| **Payment** | Stripe integration, webhook handlers, and `Transaction` entities....and more. |
+| **Storage** | S3/Cloudinary upload logic and file metadata tracking....and more. |
+| **Realtime** | WebSocket emitters and event listeners for your entities....and more. |
+|... | ... | ... |...more plugins to come... |
+
+### 🛠️ Customization & Extensibility
+Every plugin is **open and extendable**.
+- **Extend the Schema:** Add custom fields to a plugin's internal entities.
+- **Override Rules:** Customize the authorization logic of a pre-built plugin.
+- **Create Your Own:** Package your business logic into a plugin and reuse it across every project you build.
+
+> **Junior-Friendly, Senior-Powered**: Spend 1 hour learning the Nevr DSL, and you can assemble a backend that would typically take a senior developer weeks to architect from scratch.
+
+---
 
 ## Concepts At A Glance
 
@@ -151,6 +171,21 @@ Adapter helpers (Express)
 - `expressAdapter(api, { getUser, cors, debugLogs })`
 <!-- - `expressDevAuth(req)` → reads `X-User-Id`, `X-User-Role` -->
 - `expressJwtAuth(verify)` → parse Bearer token and verify
+
+---
+
+## ⚖️ Traditional Backend vs. Nevr
+
+| Feature | Traditional (Express / NestJS) | **Nevr** |
+| :--- | :--- | :--- |
+| **Boilerplate** | Write Routes, Controllers, and Services for every resource. | **Zero-API.** Define the Entity; the plumbing is handled. |
+| **Type Safety** | Manually sync interfaces or use decorators. | **End-to-End.** Client is generated from the Entity; build fails on drift. |
+| **Validation** | Duplicate logic in DB schema and Runtime (Zod/Joi). | **Single Source of Truth.** Constraints are baked into the Entity. |
+| **Authorization** | Manual middleware chains and ownership checks. | **Declarative.** Use `.ownedBy()` or `.rules()` in the model. |
+| **Documentation** | Maintain Swagger/OpenAPI decorators manually. | **Mathematically Synced.** OpenAPI spec is the schema itself. |
+| **Data Access** | Manual CRUD logic and Repository patterns. | **Automatic CRUD.** Filtering, sorting, and pagination out-of-the-box. |
+
+---
 
 ## Documentation
 
@@ -324,21 +359,13 @@ const api = zapi({
 
 
 ### Coming Soon
-- Next.js adapter
-- Kysely driver
-- Drizzle driver
-- Soft delete plugin
-- Rate limiting plugin
-- OpenAPI generator
-- GraphQL support
-- File upload plugin
-- Email plugin
-- Payment plugin
-- More field types & modifiers
-- More built-in rules
-- Improved docs & examples
-- more adapters & drivers
-- more plugins ....
+- **Drivers**: Drizzle, Kysely...
+- **Adapters**: Next.js, Fastify, Koa...
+- **Feature Plugins**: storage, search-meilisearch....
+- **Enterprise Plugins**: advanced RBAC, audit logs, multi-tenancy...
+- **Testing Utilities**: mocks, fixtures, e2e helpers...
+- **Performance Optimizations**: caching, batching...
+- ...more!
 ## License
 
 MIT
