@@ -260,7 +260,7 @@ export function auth(options: AuthPluginOptions = {}): Plugin {
     // -------------------------------------------------------------------------
     // Middleware - Extract user from session
     // -------------------------------------------------------------------------
-    middleware: ((zapi: ZapiInstance): Middleware[] => {
+    middleware: ((zapi: NevrInstance): Middleware[] => {
       const driver = zapi.driver as any
       const prismaClient = driver.prisma || driver.db || driver._prisma
       
@@ -302,7 +302,7 @@ export function auth(options: AuthPluginOptions = {}): Plugin {
     // Hooks
     // -------------------------------------------------------------------------
     hooks: {
-      onInit: async (zapi: ZapiInstance) => {
+      onInit: async (zapi: NevrInstance) => {
         console.log(`[Auth] Plugin initialized`)
         console.log(`[Auth] Mode: ${mode}`)
         console.log(`[Auth] Routes: ${basePath}/*`)
