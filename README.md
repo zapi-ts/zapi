@@ -20,17 +20,60 @@
 
 ---
 
-Nevr lets you describe your domain once with a tiny, fluent DSL and get:
-- REST CRUD endpoints with ownership-aware authorization
-- Input validation and clear error responses
-- Clean framework adapters (Express, Hono)
-- Database drivers (Prisma) with pluggable backend
-- Optional plugins (auth, timestamps) without lock‑in
-- Generated Prisma schema, shared TS types, and a typed API client
+## ⚖️ Traditional Backend vs. Nevr
 
-Docs live in  docs/ (VitePress). Quick start below; full guides cover every keyword.
+| Feature | Traditional (Express / NestJS) | **Nevr** |
+| :--- | :--- | :--- |
+| **Boilerplate** | Write Routes, Controllers, and Services for every resource. | **Zero-API.** Define the Entity; the plumbing is handled. |
+| **Type Safety** | Manually sync interfaces or use decorators. | **End-to-End.** Client is generated from the Entity; build fails on drift. |
+| **Validation** | Duplicate logic in DB schema and Runtime (Zod/Joi). | **Single Source of Truth.** Constraints are baked into the Entity. |
+| **Authorization** | Manual middleware chains and ownership checks. | **Declarative.** Use `.ownedBy()` or `.rules()` in the model. |
+| **Documentation** | Maintain Swagger/OpenAPI decorators manually. | **Mathematically Synced.** OpenAPI spec is the schema itself. |
+| **Data Access** | Manual CRUD logic and Repository patterns. | **Automatic CRUD.** Filtering, sorting, and pagination out-of-the-box. |
 
 
+## 🥊 The Code Duel: Traditional vs. Nevr
+
+# Traditional Approach (Express + Prisma + Zod)
+ To get a single Post resource with validation and ownership-checks, you typically write:
+
+// ❌ ~50-100 lines across 3+ files
+// 1. Define Prisma Schema (schema.prisma)
+// 2. Define Zod Validation (post.schema.ts)
+// 3. Define Types (post.types.ts)
+// 4. Write Controller logic (post.controller.ts)
+// 5. Setup Routes (post.routes.ts)
+```ts 
+router.post("/posts", async (req, res) => {
+  const schema = z.object({ title: z.string().min(1), body: z.string() });
+  const data = schema.parse(req.body); // Manual validation
+  
+  const post = await prisma.post.create({ 
+    data: { ...data, authorId: req.user.id } // Manual ownership link
+  });
+  res.json(post);
+});
+```
+// ...Repeat for GET, PUT, DELETE, and Pagination logic
+
+# The Nevr Approach
+ With Nevr, the Entity is the API. You define the Post entity once:
+
+// ✅ 8 lines, 1 file. Everything handled.
+```ts
+import { entity, string, text, belongsTo } from "nevr"
+export const post = entity("post", {
+  title: string.min(1).max(200),
+  body: text,
+  author: belongsTo(() => user),
+}).ownedBy("author") 
+```
+// DONE. You now have:
+// - POST /api/posts (Validated & Auth protected)
+// - GET /api/posts (Filtered, Sorted, Paginated)
+// - PUT /api/posts/:id (Ownership enforced)
+// - DELETE /api/posts/:id (Ownership enforced)
+// - Fully typed Frontend Client
 
 ## Quick Start
 
@@ -53,30 +96,6 @@ export const post = entity("post", {
 ```
 
 From this, you get CRUD endpoints, validation, auth rules, Prisma schema, TS types, and a client.
-
-## Use With Express + Prisma
-
-```ts
-import express from "express"
-import { PrismaClient } from "@prisma/client"
-import { zapi } from "nevr" 
-import { prisma } from "nevr/drivers/prisma"
-import { expressAdapter } from "nevr/adapters/express"
-import { user, post } from "./entities"
-
-const db = new PrismaClient()
-
-const api = zapi({ // Consistent naming
-  entities: [user, post],
-  driver: prisma(db),
-  cors: { origin: true },
-})
-
-const app = express()
-app.use(express.json())
-app.use("/api", expressAdapter(api))
-app.listen(3000)
-```
 
 ## Concepts At A Glance
 
