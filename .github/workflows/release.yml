@@ -43,8 +43,11 @@ jobs:
           # Function to check if version exists and publish
           publish_package() {
             local package_dir=$1
-            local package_name=$(node -p "require('./$package_dir/package.json').name")
-            local package_version=$(node -p "require('./$package_dir/package.json').version")
+            cd "$package_dir"
+            
+            # Read package name and version from package.json (relative to package directory)
+            local package_name=$(node -p "require('./package.json').name")
+            local package_version=$(node -p "require('./package.json').version")
             
             echo "Checking $package_name@$package_version..."
             
@@ -53,9 +56,10 @@ jobs:
               echo "⚠️  $package_name@$package_version already exists on npm. Skipping..."
             else
               echo "📦 Publishing $package_name@$package_version..."
-              cd "$package_dir" && pnpm publish --access public --no-git-checks
-              cd ..
+              pnpm publish --access public --no-git-checks
             fi
+            
+            cd "$GITHUB_WORKSPACE"
           }
           
           # Publish all packages
