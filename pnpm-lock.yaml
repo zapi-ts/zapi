@@ -84,7 +84,7 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@22.19.3)
 
-  packages/zapi:
+  packages/nevr:
     devDependencies:
       '@prisma/client':
         specifier: ^5.22.0
