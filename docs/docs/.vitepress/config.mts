@@ -9,6 +9,7 @@ export default defineConfig({
     ['meta', { property: 'og:description', content: 'Entity-first, type-safe API framework. Define once, ship everywhere.' }],
   ],
   themeConfig: {
+    logo: '/nevr_pp.png',
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Docs', link: '/get-started/introduction' },
@@ -39,7 +40,7 @@ export default defineConfig({
       {
         text: 'Entity',
         items: [
-          { text: 'Defining Entities', link: '/entity/index' },
+          { text: 'Defining Entities', link: '/entity/define-entity' },
           { text: 'Fields', link: '/entity/fields' },
           { text: 'Validation', link: '/entity/validation' },
           { text: 'Relationships', link: '/entity/relationships' },
@@ -81,6 +82,13 @@ export default defineConfig({
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/nevr-ts/nevr' }
-    ]
+    ],
+    search: {
+      provider: 'local'
+    },
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2025 Nevr Contributors'
+    }
   }
 })

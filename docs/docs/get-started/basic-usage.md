@@ -32,7 +32,7 @@ We recommend separating your configuration from your server entry point.
 
 **`src/config.ts`** — The Nevr configuration
 ```typescript
-import { nevr } from "nevr"
+import { zapi as nevr } from "nevr"
 import { prisma } from "nevr/drivers/prisma"
 import { PrismaClient } from "@prisma/client"
 import { post } from "./entities/post"

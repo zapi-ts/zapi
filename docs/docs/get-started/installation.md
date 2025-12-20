@@ -67,5 +67,5 @@ If you want to add Nevr to an existing project:
 
     ```bash
     npx tsx src/generate.ts
-    npx prisma db push --schema=generated/prisma/schema.prisma
+    npx prisma db push --schema=./generated/prisma/schema.prisma
     ```

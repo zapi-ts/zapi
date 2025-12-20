@@ -36,4 +36,7 @@ Fields can be modified to add constraints or default values:
 
 ## Relationships
 
-(Coming Soon) Nevr will support defining relationships between entities directly in the DSL.
+Entities can relate to each other using special field types:
+- `belongsTo(() => OtherEntity)`: Many-to-one relationship.
+- `hasMany(() => OtherEntity)`: One-to-many relationship.
+- `hasOne(() => OtherEntity)`: One-to-one relationship.

@@ -1,61 +1,69 @@
 # The Nevr Philosophy
 
-Nevr was born from a simple observation: **Backend development has become an exercise in gluing together the same libraries over and over again.**
+Nevr was born from a simple observation: **Backend development has become an exercise in gluing together the same libraries and patterns over and over again.** We believe that developers shouldn't be architects of boilerplate; they should be architects of value.
 
-## 1. The 80/20 Rule
+---
 
-In almost every backend project, the code distribution looks like this:
+## 1. Beyond the 80/20 Rule (Zero-API)
 
-- **80% Repetitive Patterns**: CRUD endpoints, validation, authentication, database schemas, type definitions, error handling.
-- **20% Unique Logic**: The specific business rules that make your app unique.
+In almost every backend project, 80% of the code consists of repetitive patterns: CRUD endpoints, validation, authentication, database schemas, and type definitions. The remaining 20% is the unique business logic that actually makes your application valuable.
 
-Most frameworks (like NestJS or Express) give you tools to write the 80%, but you still have to *write* it.
+**The Nevr Mission**: To push that 80% to **Zero**. 
 
-**Nevr's Goal**: Automate the 80% completely. You define the "What" (Entities), and Nevr generates the "How". This frees you to spend 100% of your time on the unique 20%.
+By adopting a "Zero-API" approach, you define the **Entity**, and Nevr generates the "How." We don't just give you tools to write the 80%—we automate it entirely so you can spend 100% of your time on the unique 20% that matters.
 
-## 2. Standing on Giants
+---
 
-We believe in using the best tools for the job, not reinventing the wheel. Nevr is an abstraction layer over the ecosystem's most battle-tested libraries:
+## 2. The Trinity: Adapters, Drivers, and Plugins
 
-| Feature | Powered By | Why? |
-|---------|------------|------|
-| **Database** | [Prisma](https://www.prisma.io/) | Best-in-class ORM and migration tool. |
-| **Validation** | [Zod](https://zod.dev/) | The standard for TypeScript schema validation. |
-| **Auth** | [Better Auth](https://better-auth.com/) | The most comprehensive auth solution. |
-| **Server** | [Express](https://expressjs.com/) / [Hono](https://hono.dev/) | The most popular and fastest web standards. |
+We believe in extreme modularity and using the best tools for the job without reinventing the wheel. Nevr is an abstraction layer built on three pillars:
 
-Nevr isn't a "new way" to do things; it's the **best way** to wire these existing tools together.
+| Pillar | Purpose | Philosophy |
+| :--- | :--- | :--- |
+| **Adapters** | The "Where" | Support every framework (Express, Hono, Next.js). No magic boxes—Nevr runs *inside* your favorite server. |
+| **Drivers** | The "How" | Support every database ORM (Prisma, Drizzle, Kysely). Leverage battle-tested giants. |
+| **Plugins** | The "What" | **Everything in Nevr is a plugin.** Auth, Payments, Search, and Storage are just 1-line additions. |
 
-## 3. Data = Schema + Rules
+---
 
-In traditional development, "Schema" (Database) and "Rules" (Logic) are separated.
-- **Schema**: `schema.prisma` or SQL migrations.
-- **Rules**: Controllers, Services, Middleware.
+## 3. Encapsulated Expertise (The "Human" Philosophy)
 
-We believe this separation is artificial. In the backend, **Data is the Logic**.
+The biggest bottleneck in development isn't code—it's **knowledge**. 
 
-When you say "A User has a unique email," that is both a database constraint (Schema) and a validation rule (Logic). By defining them together in a Nevr **Entity**, you create a Single Source of Truth that drives your entire stack.
+Traditional frameworks require a Senior Developer to architect the "right way" to handle security, auth, or real-time data. In Nevr, **Senior-level knowledge is encapsulated into the System.** * **Best Practices by Default**: Our plugin system uses standards like Zod for validation and Better Auth for authentication and more. You get industry best practices without needing to research or implement them yourself.
+* **The 1-Hour Mastery**: Because Nevr uses an intuitive Entity DSL, a junior or mid-level developer can deploy a professional-grade, type-safe backend in a single afternoon.
 
-## 4. Freedom of Choice (The "Twist")
+---
 
-Nevr is designed to be **Framework Agnostic**.
+## 4. Data-Centric Architecture: Logic is the Entity
 
-We know that "Magic Frameworks" (like Strapi or Firebase) are great until you hit a wall. That's why Nevr runs *inside* your favorite server framework.
+In traditional development, "Schema" (Database) and "Rules" (Logic) are separated into different files and layers. We believe this separation is artificial.
 
-- Need standard CRUD? **Use Nevr.**
-- Need a complex, custom WebSocket endpoint? **Write a raw Express route.**
-- Need to optimize a specific SQL query? **Use the raw Prisma client.**
+In the backend, **Data is the Logic.**
 
-You never lose control. You just write less boilerplate.
+When you define a field as unique or owned by a specific user, that is a database constraint, a security rule, and an API requirement all at once. By defining them together in a Nevr **Entity**, you create a Single Source of Truth that drives your entire stack.
 
-## 5. The Learning Curve
+---
 
-**Does it take weeks to learn Nevr? No. It takes hours.**
+## 5. Assemble, Don't Build
 
-Because Nevr is built on standards, there is almost nothing new to learn.
+We believe the future of software isn't "writing more code," but "assembling better modules." Nevr is designed to give you speed without taking away your freedom.
 
-- **Do you know TypeScript?** Then you know how to define fields.
-- **Do you know Prisma?** Then you know how the database works.
-- **Do you know Express?** Then you know how the server works.
+* **Need standard CRUD?** Let Nevr handle it.
+* **Need a complex, custom WebSocket?** Write a raw route.
+* **Need to optimize a query?** Use the raw driver client.
 
-The only "new" thing is the **Entity DSL**, which is designed to be intuitive and readable. You can master the core concepts in a single afternoon.
+You never lose control. You just stop wasting time on things that should be automatic.
+
+---
+
+## 6. The "Never" Promise
+
+We named it **Nevr** because there are things you should **never** have to do again:
+
+* **Never** manually sync your Frontend types with your Backend.
+* **Never** write another repetitive CRUD controller.
+* **Never** spend days researching how to "correctly" implement Auth or Payments.
+* **Never** worry about your Documentation drifting from your Code.
+
+**Focus on your product. Let Nevr handle the rest.**
