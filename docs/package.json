@@ -1,6 +1,6 @@
 {
   "name": "nevr-docs",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "Documentation for Nevr",
   "scripts": {
     "docs:dev": "vitepress dev docs",
