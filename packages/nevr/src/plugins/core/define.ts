@@ -36,7 +36,7 @@ export interface PluginExtensionBuilder {
   basePath(path: string | false): this
 
   /** Modify an entity */
-  entity(name: string, config: PluginExtension["entities"][string]): this
+  entity(name: string, config: NonNullable<PluginExtension["entities"]>[string]): this
 
   /** Add a new entity */
   addEntity(name: string, config: NonNullable<PluginExtension["addEntities"]>[string]): this
