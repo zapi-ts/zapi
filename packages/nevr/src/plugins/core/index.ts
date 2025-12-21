@@ -7,8 +7,8 @@
 export * from "./contract.js"
 
 // Plugin Definition Helper
-export { definePlugin, simplePlugin } from "./define.js"
-export type { DefinePluginOptions } from "./define.js"
+export { definePlugin, simplePlugin, createExtensionBuilder } from "./define.js"
+export type { DefinePluginOptions, PluginExtensionBuilder } from "./define.js"
 
 // Plugin Registry
 export {
@@ -33,7 +33,11 @@ export {
   resolvePlugin,
   getPluginFieldExtensions,
   mergeResolvedPlugins,
+  getEntityRoutePath,
+  isEntityRouteDisabled,
+  getEntityRouteHandler,
 } from "./resolver.js"
+export type { MergedPlugins } from "./resolver.js"
 
 // Plugin Entity Reference
 export {

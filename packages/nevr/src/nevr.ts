@@ -28,7 +28,7 @@ import {
   executeHook,
   createHookContext,
 } from "./plugin.js"
-import { matchRoute, pluralize } from "./router.js"
+import { matchRoute, pluralize, type MatchRouteOptions } from "./router.js"
 import {
   validationError,
   unauthorizedError,
@@ -36,6 +36,8 @@ import {
   notFoundError,
   handleError,
 } from "./error.js"
+import { resolvePlugin, type ResolvedEntityMeta } from "./plugins/core/resolver.js"
+import type { ZapiPlugin } from "./plugins/core/contract.js"
 
 // -----------------------------------------------------------------------------
 // Default Middleware
@@ -109,7 +111,27 @@ export function zapi(config: ZapiConfig): ZapiInstance {
   // Initialize plugins
   const plugins = config.plugins || []
 
-  // Apply plugin modifications
+  // Resolve new-style plugins and collect entity metadata
+  const entityMeta = new Map<string, ResolvedEntityMeta>()
+
+  for (const plugin of plugins) {
+    // Check if this is a new-style ZapiPlugin (has meta property)
+    if ("meta" in plugin && (plugin as ZapiPlugin).meta) {
+      const resolved = resolvePlugin(plugin as ZapiPlugin)
+
+      // Add plugin entities to main entity map
+      for (const entity of resolved.entities) {
+        entities.set(entity.name, entity)
+      }
+
+      // Store entity metadata
+      for (const [name, meta] of resolved.entityMeta) {
+        entityMeta.set(name, meta)
+      }
+    }
+  }
+
+  // Apply plugin modifications (for legacy plugins)
   applyPluginEntities(entities, plugins)
   applyPluginFields(entities, plugins)
 
@@ -128,7 +150,7 @@ export function zapi(config: ZapiConfig): ZapiInstance {
 
   // Plugin routes will be populated after instance is created
   let pluginRoutes: Route[] = []
-  let pluginMiddlewareAdded = false
+  let routeOptions: MatchRouteOptions = { entityMeta }
 
   // -----------------------------------------------------------------------------
   // Request Handler
@@ -172,7 +194,7 @@ export function zapi(config: ZapiConfig): ZapiInstance {
     }
 
     // Route the request
-    const route = matchRoute(req, entities, pluginRoutes)
+    const route = matchRoute(req, entities, routeOptions)
 
     // Health check
     if (route.type === "health") {
@@ -196,6 +218,16 @@ export function zapi(config: ZapiConfig): ZapiInstance {
     // Not found
     if (route.type === "notFound" || !route.entity || !route.operation) {
       return notFoundError("Endpoint not found")
+    }
+
+    // If there's a custom handler for this entity operation, use it
+    if (route.customHandler) {
+      try {
+        const response = await route.customHandler(req, instance)
+        return { ...response, headers: { ...ctx.response.headers, ...response.headers } }
+      } catch (error) {
+        return handleError(error)
+      }
     }
 
     // Entity CRUD operations
@@ -491,6 +523,9 @@ export function zapi(config: ZapiConfig): ZapiInstance {
   middleware.push(...pluginMiddleware)
 
   pluginRoutes = collectRoutes(plugins, instance)
+
+  // Update route options with collected plugin routes
+  routeOptions = { pluginRoutes, entityMeta }
 
   // Initialize plugins (async, but we don't await here)
   initializePlugins(plugins, instance).catch(console.error)
