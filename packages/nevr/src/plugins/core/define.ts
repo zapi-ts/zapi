@@ -3,7 +3,7 @@
 // Helper function for creating type-safe plugins
 // =============================================================================
 
-import type { ZapiPlugin, PluginMeta, PluginFactory, PluginExtension } from "./contract.js"
+import type { ZapiPlugin, PluginMeta, PluginFactory, PluginExtension, EntityRoutesConfig } from "./contract.js"
 import { registerPluginFactory, validatePlugin } from "./registry.js"
 
 // -----------------------------------------------------------------------------
@@ -13,18 +13,91 @@ import { registerPluginFactory, validatePlugin } from "./registry.js"
 export interface DefinePluginOptions<TOptions = any> {
   /** Plugin metadata */
   meta: PluginMeta
-  
+
   /** Factory function that creates the plugin given options */
   factory: (options: TOptions, extension?: PluginExtension) => Omit<ZapiPlugin<TOptions>, "meta" | "options" | "extension">
-  
+
   /** Default options */
   defaults?: Partial<TOptions>
-  
+
   /** Validate options before creating plugin */
   validate?: (options: TOptions) => string[] | void
-  
+
   /** Auto-register the factory globally */
   register?: boolean
+}
+
+// -----------------------------------------------------------------------------
+// Extension Builder Types (for fluent API)
+// -----------------------------------------------------------------------------
+
+export interface PluginExtensionBuilder {
+  /** Set base path for plugin routes */
+  basePath(path: string | false): this
+
+  /** Modify an entity */
+  entity(name: string, config: PluginExtension["entities"][string]): this
+
+  /** Add a new entity */
+  addEntity(name: string, config: NonNullable<PluginExtension["addEntities"]>[string]): this
+
+  /** Disable a route */
+  disableRoute(path: string): this
+
+  /** Override a route with custom handler */
+  overrideRoute(path: string, handler: NonNullable<PluginExtension["routes"]>[string]): this
+
+  /** Configure entity routes */
+  entityRoutes(entityName: string, config: EntityRoutesConfig): this
+
+  /** Build the extension */
+  build(): PluginExtension
+}
+
+/** Create extension builder for fluent API */
+export function createExtensionBuilder(): PluginExtensionBuilder {
+  const ext: PluginExtension = {}
+
+  return {
+    basePath(path) {
+      ext.basePath = path
+      return this
+    },
+
+    entity(name, config) {
+      if (!ext.entities) ext.entities = {}
+      ext.entities[name] = config
+      return this
+    },
+
+    addEntity(name, config) {
+      if (!ext.addEntities) ext.addEntities = {}
+      ext.addEntities[name] = config
+      return this
+    },
+
+    disableRoute(path) {
+      if (!ext.routes) ext.routes = {}
+      ext.routes[path] = "disable"
+      return this
+    },
+
+    overrideRoute(path, handler) {
+      if (!ext.routes) ext.routes = {}
+      ext.routes[path] = handler
+      return this
+    },
+
+    entityRoutes(entityName, config) {
+      if (!ext.entityRoutes) ext.entityRoutes = {}
+      ext.entityRoutes[entityName] = config
+      return this
+    },
+
+    build() {
+      return ext
+    },
+  }
 }
 
 // -----------------------------------------------------------------------------

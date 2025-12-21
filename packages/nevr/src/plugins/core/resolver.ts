@@ -10,8 +10,11 @@ import type {
   PluginExtension,
   PluginFieldDef,
   PluginEntityDef,
+  PluginExtensionEntityDef,
   ResolvedPlugin,
+  ResolvedEntityMeta,
   PluginLifecycleHooks,
+  EntityRoutesConfig,
 } from "./contract.js"
 
 // -----------------------------------------------------------------------------
@@ -62,29 +65,58 @@ function toZapiEntity(name: string, def: PluginEntityDef): Entity {
 }
 
 // -----------------------------------------------------------------------------
+// Entity Rename Tracking
+// -----------------------------------------------------------------------------
+
+interface EntityRenameInfo {
+  originalName: string
+  newName: string
+  routePath?: string
+  internal?: boolean
+}
+
+// -----------------------------------------------------------------------------
 // Apply Extension to Schema
 // -----------------------------------------------------------------------------
+
+interface ApplyExtensionResult {
+  schema: PluginSchema
+  renames: Map<string, EntityRenameInfo>
+}
 
 function applyExtension(
   schema: PluginSchema,
   extension: PluginExtension,
   pluginId: string
-): PluginSchema {
+): ApplyExtensionResult {
   const result: PluginSchema = {
-    entities: { ...schema.entities },
+    entities: {},
     extend: { ...schema.extend },
   }
-  
+
+  // Deep copy entities to avoid mutation
+  if (schema.entities) {
+    for (const [name, def] of Object.entries(schema.entities)) {
+      result.entities![name] = {
+        ...def,
+        fields: { ...def.fields },
+      }
+    }
+  }
+
+  // Track entity renames
+  const renames = new Map<string, EntityRenameInfo>()
+
   // Apply entity modifications
   if (extension.entities && result.entities) {
     for (const [entityName, entityExt] of Object.entries(extension.entities)) {
       const entity = result.entities[entityName]
-      
+
       if (!entity) {
         console.warn(`[${pluginId}] Cannot extend non-existent entity: ${entityName}`)
         continue
       }
-      
+
       // Remove entity if requested (and allowed)
       if (entityExt.remove) {
         if (entity.required) {
@@ -94,47 +126,85 @@ function applyExtension(
           continue
         }
       }
-      
+
+      // Handle entity rename
+      if (entityExt.rename) {
+        const newName = entityExt.rename
+        result.entities[newName] = entity
+        delete result.entities[entityName]
+
+        renames.set(newName, {
+          originalName: entityName,
+          newName,
+          routePath: entityExt.routePath,
+          internal: entityExt.internal,
+        })
+      } else if (entityExt.routePath || entityExt.internal !== undefined) {
+        // Track route path / internal changes without rename
+        renames.set(entityName, {
+          originalName: entityName,
+          newName: entityName,
+          routePath: entityExt.routePath,
+          internal: entityExt.internal,
+        })
+      }
+
+      // Get the entity reference (might have been renamed)
+      const targetName = entityExt.rename || entityName
+      const targetEntity = result.entities[targetName]
+
+      if (!targetEntity) continue
+
+      // Apply internal flag
+      if (entityExt.internal !== undefined) {
+        targetEntity.internal = entityExt.internal
+      }
+
+      // Apply route path override
+      if (entityExt.routePath) {
+        targetEntity.routePath = entityExt.routePath
+      }
+
       // Add new fields directly
       if (entityExt.addFields) {
         for (const [fieldName, fieldDef] of Object.entries(entityExt.addFields)) {
-          entity.fields[fieldName] = fieldDef
+          targetEntity.fields[fieldName] = fieldDef
         }
       }
-      
+
       // Modify existing fields
       if (entityExt.fields) {
         for (const [fieldName, fieldExt] of Object.entries(entityExt.fields)) {
-          const field = entity.fields[fieldName]
-          
+          const field = targetEntity.fields[fieldName]
+
           // Add new field
           if (fieldExt.add) {
-            entity.fields[fieldName] = fieldExt.add
+            targetEntity.fields[fieldName] = fieldExt.add
             continue
           }
-          
+
           // Field operations require field to exist
           if (!field) {
-            console.warn(`[${pluginId}] Cannot modify non-existent field: ${entityName}.${fieldName}`)
+            console.warn(`[${pluginId}] Cannot modify non-existent field: ${targetName}.${fieldName}`)
             continue
           }
-          
+
           // Remove field (if not locked)
           if (fieldExt.remove) {
             if (field.locked) {
-              console.warn(`[${pluginId}] Cannot remove locked field: ${entityName}.${fieldName}`)
+              console.warn(`[${pluginId}] Cannot remove locked field: ${targetName}.${fieldName}`)
             } else {
-              delete entity.fields[fieldName]
+              delete targetEntity.fields[fieldName]
             }
             continue
           }
-          
+
           // Rename field
           if (fieldExt.rename) {
-            entity.fields[fieldExt.rename] = field
-            delete entity.fields[fieldName]
+            targetEntity.fields[fieldExt.rename] = field
+            delete targetEntity.fields[fieldName]
           }
-          
+
           // Override field properties
           if (fieldExt.override) {
             Object.assign(field, fieldExt.override)
@@ -143,17 +213,46 @@ function applyExtension(
       }
     }
   }
-  
+
   // Add new entities
   if (extension.addEntities) {
     if (!result.entities) result.entities = {}
     for (const [entityName, entityDef] of Object.entries(extension.addEntities)) {
       // Namespace the entity name
       result.entities[`${pluginId}_${entityName}`] = entityDef
+
+      // Track as a new entity (no rename, but track for routing)
+      renames.set(`${pluginId}_${entityName}`, {
+        originalName: entityName,
+        newName: `${pluginId}_${entityName}`,
+        routePath: entityDef.routePath,
+        internal: entityDef.internal,
+      })
     }
   }
-  
-  return result
+
+  return { schema: result, renames }
+}
+
+// -----------------------------------------------------------------------------
+// Compute Base Path
+// -----------------------------------------------------------------------------
+
+function computeBasePath(meta: { id: string; basePath?: string | false }, extension?: PluginExtension): string {
+  // Extension basePath takes precedence
+  if (extension?.basePath !== undefined) {
+    if (extension.basePath === false) return ""
+    return extension.basePath.startsWith("/") ? extension.basePath : `/${extension.basePath}`
+  }
+
+  // Then meta basePath
+  if (meta.basePath !== undefined) {
+    if (meta.basePath === false) return ""
+    return meta.basePath.startsWith("/") ? meta.basePath : `/${meta.basePath}`
+  }
+
+  // Default: "/" + plugin id
+  return `/${meta.id}`
 }
 
 // -----------------------------------------------------------------------------
@@ -163,36 +262,75 @@ function applyExtension(
 
 export function resolvePlugin(plugin: ZapiPlugin): ResolvedPlugin {
   const { meta, schema, extension, routes, middleware, hooks, lifecycle } = plugin
-  
+
+  // Compute the base path for this plugin
+  const basePath = computeBasePath(meta, extension)
+
   // Apply extension if provided
   let resolvedSchema = schema || { entities: {}, extend: {} }
+  let entityRenames = new Map<string, EntityRenameInfo>()
+
   if (extension) {
-    resolvedSchema = applyExtension(resolvedSchema, extension, meta.id)
+    const result = applyExtension(resolvedSchema, extension, meta.id)
+    resolvedSchema = result.schema
+    entityRenames = result.renames
   }
-  
-  // Convert plugin entities to Zapi entities
+
+  // Convert plugin entities to Zapi entities and build metadata
   const entities: Entity[] = []
+  const entityMeta = new Map<string, ResolvedEntityMeta>()
+
   if (resolvedSchema.entities) {
     for (const [name, def] of Object.entries(resolvedSchema.entities)) {
-      entities.push(toZapiEntity(name, def))
+      const entity = toZapiEntity(name, def)
+
+      // Build entity metadata
+      const renameInfo = entityRenames.get(name)
+      const routeConfig = extension?.entityRoutes?.[name] || extension?.entityRoutes?.[renameInfo?.originalName || name]
+
+      const isInternal = renameInfo?.internal ?? def.internal ?? false
+      const entityRoutePath = renameInfo?.routePath || def.routePath
+
+      // Attach plugin metadata directly to entity
+      entity.plugin = {
+        id: meta.id,
+        basePath: basePath || undefined,
+        routePath: entityRoutePath,
+        internal: isInternal,
+      }
+
+      entities.push(entity)
+
+      entityMeta.set(name, {
+        originalName: renameInfo?.originalName || name,
+        pluginId: meta.id,
+        basePath,
+        routePath: entityRoutePath,
+        internal: isInternal,
+        routeConfig,
+      })
     }
   }
-  
+
   // Resolve routes (can be array or factory)
   const resolvedRoutes: Route[] = []
   // Routes are resolved later when ZapiInstance is available
-  
+
   // Resolve middleware (can be array or factory)
   const resolvedMiddleware: Middleware[] = []
   // Middleware is resolved later when ZapiInstance is available
-  
+
   return {
     meta,
+    basePath,
     entities,
+    entityMeta,
     routes: resolvedRoutes,
     middleware: resolvedMiddleware,
     hooks: hooks || {},
     lifecycle: lifecycle || {},
+    routeOverrides: extension?.routes,
+    entityRoutes: extension?.entityRoutes,
   }
 }
 
@@ -226,20 +364,101 @@ export function getPluginFieldExtensions(
 // Merge Multiple Plugin Resolutions
 // -----------------------------------------------------------------------------
 
-export function mergeResolvedPlugins(plugins: ResolvedPlugin[]): {
+export interface MergedPlugins {
   entities: Entity[]
+  entityMeta: Map<string, ResolvedEntityMeta>
   routes: Route[]
   middleware: Middleware[]
-} {
+}
+
+export function mergeResolvedPlugins(plugins: ResolvedPlugin[]): MergedPlugins {
   const entities: Entity[] = []
+  const entityMeta = new Map<string, ResolvedEntityMeta>()
   const routes: Route[] = []
   const middleware: Middleware[] = []
-  
+
   for (const plugin of plugins) {
     entities.push(...plugin.entities)
     routes.push(...plugin.routes)
     middleware.push(...plugin.middleware)
+
+    // Merge entity metadata
+    for (const [name, meta] of plugin.entityMeta) {
+      entityMeta.set(name, meta)
+    }
   }
-  
-  return { entities, routes, middleware }
+
+  return { entities, entityMeta, routes, middleware }
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Get full route path for an entity
+// -----------------------------------------------------------------------------
+
+export function getEntityRoutePath(
+  entityName: string,
+  entityMeta: Map<string, ResolvedEntityMeta>,
+  pluralize: (s: string) => string
+): string {
+  const meta = entityMeta.get(entityName)
+
+  if (!meta) {
+    // Not a plugin entity - use root path
+    return `/${pluralize(entityName)}`
+  }
+
+  // Use custom route path or pluralized name
+  const entityPath = meta.routePath || pluralize(entityName)
+
+  // Combine with base path
+  if (meta.basePath) {
+    return `${meta.basePath}/${entityPath}`
+  }
+
+  return `/${entityPath}`
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Check if entity route is disabled
+// -----------------------------------------------------------------------------
+
+export function isEntityRouteDisabled(
+  entityName: string,
+  operation: "list" | "create" | "read" | "update" | "delete",
+  entityMeta: Map<string, ResolvedEntityMeta>
+): boolean {
+  const meta = entityMeta.get(entityName)
+
+  if (!meta) return false
+  if (meta.internal) return true
+
+  const routeConfig = meta.routeConfig?.[operation]
+  if (!routeConfig) return false
+
+  if (routeConfig === "disable") return true
+  if (typeof routeConfig === "object" && routeConfig.disable) return true
+
+  return false
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Get custom route handler for an entity operation
+// -----------------------------------------------------------------------------
+
+export function getEntityRouteHandler(
+  entityName: string,
+  operation: "list" | "create" | "read" | "update" | "delete",
+  entityMeta: Map<string, ResolvedEntityMeta>
+): ((req: any, zapi: any) => Promise<any>) | undefined {
+  const meta = entityMeta.get(entityName)
+
+  if (!meta) return undefined
+
+  const routeConfig = meta.routeConfig?.[operation]
+  if (!routeConfig) return undefined
+
+  if (typeof routeConfig === "function") return routeConfig
+  if (typeof routeConfig === "object" && routeConfig.handler) return routeConfig.handler
+
+  return undefined
 }

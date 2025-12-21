@@ -3,7 +3,7 @@
 // The core interface and types that ALL Nevr plugins must follow
 // =============================================================================
 
-import type { Entity, FieldDef, Route, Middleware, ZapiInstance, ZapiRequest, Hooks } from "../../types.js"
+import type { Entity, FieldDef, Route, Middleware, ZapiInstance, ZapiRequest, Hooks, ZapiResponse, Operation } from "../../types.js"
 
 // -----------------------------------------------------------------------------
 // Plugin Metadata
@@ -12,27 +12,34 @@ import type { Entity, FieldDef, Route, Middleware, ZapiInstance, ZapiRequest, Ho
 export interface PluginMeta {
   /** Unique plugin identifier (e.g., "auth", "payments", "storage") */
   id: string
-  
+
   /** Human-readable plugin name */
   name: string
-  
+
   /** Semantic version (e.g., "1.0.0") */
   version: string
-  
+
   /** Plugin description */
   description?: string
-  
+
   /** Author or maintainer */
   author?: string
-  
+
   /** Plugin homepage or documentation URL */
   homepage?: string
-  
+
   /** Required Zapi version (semver range) */
   zapiVersion?: string
-  
+
   /** Plugin dependencies (other plugin IDs) */
   dependencies?: string[]
+
+  /**
+   * Base path for plugin routes (e.g., "/auth", "/payments")
+   * If not provided, defaults to "/" + id (e.g., "/auth" for id="auth")
+   * Set to false to disable base path (routes at root like non-plugin entities)
+   */
+  basePath?: string | false
 }
 
 // -----------------------------------------------------------------------------
@@ -59,15 +66,22 @@ export interface PluginFieldDef {
 export interface PluginEntityDef {
   /** Entity fields */
   fields: Record<string, PluginFieldDef>
-  
+
   /** If true, developer cannot remove this entity */
   required?: boolean
-  
+
   /** If true, no CRUD routes are generated (plugin manages routes) */
   internal?: boolean
-  
+
   /** Entity description for documentation */
   description?: string
+
+  /**
+   * Custom route path for this entity (relative to plugin basePath)
+   * If not set, uses pluralized entity name
+   * Example: "members" instead of default "users"
+   */
+  routePath?: string
 }
 
 export interface PluginSchema {
@@ -107,26 +121,77 @@ export interface PluginExtensionFieldDef {
 export interface PluginExtensionEntityDef {
   /** Modify existing fields */
   fields?: Record<string, PluginExtensionFieldDef>
-  
+
   /** Add new fields directly */
   addFields?: Record<string, PluginFieldDef>
-  
+
   /** Remove entity (only if not required) */
   remove?: boolean
+
+  /** Rename the entity (e.g., rename "user" to "member") */
+  rename?: string
+
+  /** Override the route path for this entity */
+  routePath?: string
+
+  /** Make entity internal (no CRUD routes) */
+  internal?: boolean
+}
+
+/** Route handler type for custom route implementations */
+export type RouteHandler = (req: ZapiRequest, zapi: ZapiInstance) => Promise<ZapiResponse>
+
+/** Route configuration for overriding default CRUD routes */
+export interface EntityRouteConfig {
+  /** Disable this operation entirely */
+  disable?: boolean
+  /** Custom handler for this operation */
+  handler?: RouteHandler
+}
+
+/** Per-entity route customization */
+export interface EntityRoutesConfig {
+  /** List operation (GET /entities) */
+  list?: EntityRouteConfig | "disable" | RouteHandler
+  /** Create operation (POST /entities) */
+  create?: EntityRouteConfig | "disable" | RouteHandler
+  /** Read operation (GET /entities/:id) */
+  read?: EntityRouteConfig | "disable" | RouteHandler
+  /** Update operation (PUT /entities/:id) */
+  update?: EntityRouteConfig | "disable" | RouteHandler
+  /** Delete operation (DELETE /entities/:id) */
+  delete?: EntityRouteConfig | "disable" | RouteHandler
+  /** Add custom routes */
+  custom?: Route[]
 }
 
 export interface PluginExtension {
   /** Modify plugin's entities */
   entities?: Record<string, PluginExtensionEntityDef>
-  
+
   /** Add completely new entities under this plugin's namespace */
   addEntities?: Record<string, PluginEntityDef>
-  
-  /** Override plugin routes */
+
+  /**
+   * Override plugin routes
+   * Can be used to disable routes or provide custom handlers
+   */
   routes?: {
     /** Route path -> "disable" | custom handler */
-    [path: string]: "disable" | ((req: ZapiRequest, zapi: ZapiInstance) => Promise<any>)
+    [path: string]: "disable" | RouteHandler
   }
+
+  /**
+   * Override base path for this plugin instance
+   * Takes precedence over meta.basePath
+   */
+  basePath?: string | false
+
+  /**
+   * Custom entity route configurations
+   * Key is entity name, value is route configuration
+   */
+  entityRoutes?: Record<string, EntityRoutesConfig>
 }
 
 // -----------------------------------------------------------------------------
@@ -204,11 +269,35 @@ export interface PluginRegistryEntry {
 // Resolved Plugin (After Extension Applied)
 // -----------------------------------------------------------------------------
 
+/** Entity metadata including plugin and routing information */
+export interface ResolvedEntityMeta {
+  /** Original entity name from plugin */
+  originalName: string
+  /** Plugin ID that owns this entity */
+  pluginId: string
+  /** Base path for routes (e.g., "/auth") */
+  basePath: string
+  /** Custom route path (overrides pluralized name) */
+  routePath?: string
+  /** If true, no CRUD routes generated */
+  internal: boolean
+  /** Route customizations */
+  routeConfig?: EntityRoutesConfig
+}
+
 export interface ResolvedPlugin {
   meta: PluginMeta
+  /** Resolved base path for this plugin */
+  basePath: string
   entities: Entity[]
+  /** Metadata for each entity (keyed by entity name) */
+  entityMeta: Map<string, ResolvedEntityMeta>
   routes: Route[]
   middleware: Middleware[]
   hooks: Hooks
   lifecycle: PluginLifecycleHooks
+  /** Route overrides from extension */
+  routeOverrides?: PluginExtension["routes"]
+  /** Entity route configs from extension */
+  entityRoutes?: PluginExtension["entityRoutes"]
 }

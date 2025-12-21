@@ -4,6 +4,7 @@
 // =============================================================================
 
 import type { ZapiRequest, ZapiResponse, Entity, Plugin, Route } from "./types.js"
+import type { ResolvedEntityMeta, RouteHandler } from "./plugins/core/contract.js"
 
 // -----------------------------------------------------------------------------
 // Route Matching
@@ -16,6 +17,12 @@ export interface RouteMatch {
   resourceId?: string
   operation?: "list" | "read" | "create" | "update" | "delete"
   pluginRoute?: Route
+  /** Plugin ID that owns this entity (if any) */
+  pluginId?: string
+  /** Custom route handler (if entity route is overridden) */
+  customHandler?: RouteHandler
+  /** Whether the route is disabled */
+  disabled?: boolean
 }
 
 /**
@@ -48,13 +55,29 @@ export function singularize(str: string): string {
 }
 
 /**
+ * Route matching options including plugin metadata
+ */
+export interface MatchRouteOptions {
+  /** Plugin routes to check */
+  pluginRoutes?: Route[]
+  /** Entity metadata from plugins (for base paths and route configs) */
+  entityMeta?: Map<string, ResolvedEntityMeta>
+}
+
+/**
  * Match a request to a route
  */
 export function matchRoute(
   req: ZapiRequest,
   entities: Map<string, Entity>,
-  pluginRoutes?: Route[]
+  options?: MatchRouteOptions | Route[]
 ): RouteMatch {
+  // Handle backwards compatibility (pluginRoutes passed directly)
+  const opts: MatchRouteOptions = Array.isArray(options)
+    ? { pluginRoutes: options }
+    : options || {}
+
+  const { pluginRoutes, entityMeta } = opts
   const path = req.path.replace(/^\/+|\/+$/g, "") // Remove leading/trailing slashes
   const parts = path.split("/").filter(Boolean)
 
@@ -77,14 +100,23 @@ export function matchRoute(
     }
   }
 
-  // Entity routes
+  // Try to match plugin entity routes (with base paths)
+  if (entityMeta && entityMeta.size > 0) {
+    const match = matchPluginEntityRoute(req, parts, entities, entityMeta)
+    if (match) return match
+  }
+
+  // Fall back to standard entity routes (for non-plugin entities)
   const resourceName = parts[0]
   const resourceId = parts[1]
 
-  // Find entity by plural name
+  // Find entity by plural name (only non-plugin entities)
   let entity: Entity | undefined
 
   for (const [name, e] of entities) {
+    // Skip plugin entities - they use base paths
+    if (entityMeta?.has(name)) continue
+
     if (pluralize(name) === resourceName || name === resourceName) {
       entity = e
       break
@@ -120,6 +152,98 @@ export function matchRoute(
     resourceId,
     operation,
   }
+}
+
+/**
+ * Match plugin entity routes with base paths
+ * Example: /auth/users -> auth plugin's user entity
+ */
+function matchPluginEntityRoute(
+  req: ZapiRequest,
+  parts: string[],
+  entities: Map<string, Entity>,
+  entityMeta: Map<string, ResolvedEntityMeta>
+): RouteMatch | null {
+  const method = req.method
+
+  // Group entities by their base path for efficient matching
+  const entityByPath = new Map<string, { entity: Entity; meta: ResolvedEntityMeta }>()
+
+  for (const [name, meta] of entityMeta) {
+    const entity = entities.get(name)
+    if (!entity) continue
+
+    // Build the full path for this entity
+    const entityPath = meta.routePath || pluralize(name)
+    const fullPath = meta.basePath
+      ? `${meta.basePath.replace(/^\//, "")}/${entityPath}`
+      : entityPath
+
+    entityByPath.set(fullPath.toLowerCase(), { entity, meta })
+  }
+
+  // Try matching with 1 or 2 parts (collection or resource)
+  // Format: /basePath/entityPath or /basePath/entityPath/:id
+  for (let depth = 1; depth <= Math.min(parts.length, 3); depth++) {
+    const pathParts = parts.slice(0, depth)
+    const resourceId = parts[depth]
+
+    // Check if this is a collection path (last part is entity path)
+    const testPath = pathParts.join("/").toLowerCase()
+    const match = entityByPath.get(testPath)
+
+    if (match) {
+      const { entity, meta } = match
+
+      // Check if route is disabled (internal entity)
+      if (meta.internal) {
+        return { type: "notFound", disabled: true }
+      }
+
+      // Determine operation
+      let operation: RouteMatch["operation"]
+
+      if (method === "GET" && !resourceId) {
+        operation = "list"
+      } else if (method === "GET" && resourceId) {
+        operation = "read"
+      } else if (method === "POST" && !resourceId) {
+        operation = "create"
+      } else if ((method === "PUT" || method === "PATCH") && resourceId) {
+        operation = "update"
+      } else if (method === "DELETE" && resourceId) {
+        operation = "delete"
+      } else {
+        continue // Try next depth
+      }
+
+      // Check if this specific operation is disabled
+      const routeConfig = meta.routeConfig?.[operation]
+      if (routeConfig === "disable" || (typeof routeConfig === "object" && routeConfig.disable)) {
+        return { type: "notFound", disabled: true }
+      }
+
+      // Get custom handler if any
+      let customHandler: RouteHandler | undefined
+      if (typeof routeConfig === "function") {
+        customHandler = routeConfig
+      } else if (typeof routeConfig === "object" && routeConfig.handler) {
+        customHandler = routeConfig.handler
+      }
+
+      return {
+        type: "entity",
+        entity,
+        entityName: entity.name,
+        resourceId,
+        operation,
+        pluginId: meta.pluginId,
+        customHandler,
+      }
+    }
+  }
+
+  return null
 }
 
 /**

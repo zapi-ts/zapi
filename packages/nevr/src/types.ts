@@ -51,6 +51,17 @@ export interface EntityConfig {
 export interface Entity {
   name: string
   config: EntityConfig
+  /** Plugin metadata - set when entity comes from a plugin */
+  plugin?: {
+    /** Plugin ID that owns this entity */
+    id: string
+    /** Base path for routes */
+    basePath?: string
+    /** Custom route path */
+    routePath?: string
+    /** Whether CRUD routes are disabled */
+    internal?: boolean
+  }
 }
 
 // -----------------------------------------------------------------------------
